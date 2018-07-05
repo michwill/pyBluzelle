@@ -1,4 +1,4 @@
-import pyBluzelle
+from pyBluzelle.version import get_version
 
 try:
     from setuptools import setup
@@ -8,7 +8,7 @@ except ImportError:
 
 
 setup(name='pyBluzelle',
-      version=pyBluzelle.get_version(),
+      version=get_version(),
       description='Python implementation for bluzelle APIs',
       url='http://github.com/bluzelle/pybluzelle',
       author='krxsky, liangjiaxing, weininghu1012, exeex, amastracci',

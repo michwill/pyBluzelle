@@ -91,7 +91,7 @@ if __name__ == "__main__":
     required = parser.add_argument_group('required arguments')
 
     required.add_argument("-o", "--host", type=str, default=None, help="node's url (ex. testnet.bluzelle.com)", required=True)
-    required.add_argument("-p", "--port", type=str, default=None, help="node's port (ex. 51010)", required=True)
+    required.add_argument("-p", "--port", type=str, default="51010", help="node's port (ex. 51010)", required=True)
 
     subparsers = parser.add_subparsers()
 
