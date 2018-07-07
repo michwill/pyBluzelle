@@ -12,7 +12,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-from pyBluzelle.communication import Connection
 import logging
 from version import get_version
 
@@ -20,7 +19,8 @@ __version__ = get_version()
 
 
 def create_connection(host, port, uuid):
-
+    # Ensuring that we don't pollute importers who only want to call version()
+    from pyBluzelle.communication import Connection
     return Connection(host, port, uuid)
 
 # Be nice and set up logging to /dev/null
