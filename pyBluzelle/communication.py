@@ -47,9 +47,17 @@ class Connection(object):
         self._host = host
         self._port = port
         self._uuid = uuid
+        self._transaction_id_map = {}
+        self._connect(host, port)
 
-    def _send_request(self, host, port, msg):
-        ws = websocket.create_connection("ws://{}:{}".format(host, port))
+    def _connect(self, host, port, timeout=1):
+        self._ws = websocket.create_connection("ws://{}:{}".format(host, port))
+        self._ws.settimeout(timeout)
+
+    def _send_request_async(self, msg):
+        pass
+
+    def _send_request_sync(self, msg):
         msg.db.header.db_uuid = self._uuid
         msg.db.header.transaction_id = random.randint(1, sys.maxint)
 
@@ -58,23 +66,22 @@ class Connection(object):
         req["msg"] = base64.b64encode(msg.SerializeToString())
 
         logger.debug("Sending: {}".format(msg))
-        logger.debug("-" * 60 + '\n')
-        var = json.dumps(req)
-        ws.send(json.dumps(req))
-        resp = database_pb2.database_response()
-        resp.ParseFromString(ws.recv())
+        self._ws.send(json.dumps(req))
+        response = self.read_response(msg)
+        return response
 
-        if resp.WhichOneof('success') == 'redirect':
+    def read_response(self, msg=None):
+        resp = database_pb2.database_response()
+        resp.ParseFromString(self._ws.recv())
+
+        if resp.WhichOneof('response') == 'redirect':
             host = resp.redirect.leader_host
             port = resp.redirect.leader_port
-            logger.debug("redirecting to leader at {}:{}...\n".format(host, port))
-            resp = self._send_request(host, port, msg)
+            self._connect(host, port)
+            logger.debug("redirecting to leader at {}:{}.\n".format(host, port))
+            self._send_request_sync(msg)
         else:
             logger.debug("Response: \n{}".format(resp))
-            logger.debug("-" * 60 + '\n')
-
-        ws.close()
-
         return resp
 
     def create(self, key, value):
@@ -87,7 +94,7 @@ class Connection(object):
         msg = bluzelle_pb2.bzn_msg()
         msg.db.create.key = key
         msg.db.create.value = value
-        self._send_request(self._host, self._port, msg)
+        self._send_request_sync(msg)
 
     def read(self, key):
         """
@@ -97,8 +104,8 @@ class Connection(object):
         """
         msg = bluzelle_pb2.bzn_msg()
         msg.db.read.key = key
-        resp = self._send_request(self._host, self._port, msg)
-        return resp.resp.value
+        resp = self._send_request_sync(msg)
+        return resp.read.value
 
     def update(self, key, value):
         """
@@ -110,7 +117,7 @@ class Connection(object):
         msg = bluzelle_pb2.bzn_msg()
         msg.db.update.key = key
         msg.db.update.value = value
-        self._send_request(self._host, self._port, msg)
+        self._send_request_sync(msg)
 
     def delete(self, key):
         """
@@ -120,7 +127,7 @@ class Connection(object):
         """
         msg = bluzelle_pb2.bzn_msg()
         msg.db.delete.key = key
-        self._send_request(self._host, self._port, msg)
+        self._send_request_sync(msg)
 
     def has(self, key):
         """
@@ -130,8 +137,8 @@ class Connection(object):
         """
         msg = bluzelle_pb2.bzn_msg()
         msg.db.has.key = key
-        resp = self._send_request(self._host, self._port, msg)
-        return resp.resp.has
+        resp = self._send_request_sync(msg)
+        return resp.has.has
 
     def keys(self):
         """
@@ -140,8 +147,8 @@ class Connection(object):
         """
         msg = bluzelle_pb2.bzn_msg()
         msg.db.keys.SetInParent()
-        resp = self._send_request(self._host, self._port, msg)
-        return resp.resp.keys
+        resp = self._send_request_sync( msg)
+        return resp.keys.keys
 
     def size(self):
         """
@@ -150,5 +157,14 @@ class Connection(object):
         """
         msg = bluzelle_pb2.bzn_msg()
         msg.db.size.SetInParent()
-        resp = self._send_request(self._host, self._port, msg)
-        return resp.resp.size
+        resp = self._send_request_sync(msg)
+        return ({"bytes": resp.size.bytes,
+                 "keys": resp.size.keys})
+
+    def subscribe(self):
+        logger.info("Command not implement")
+        return
+
+    def unsubscribe(self):
+        logger.info("Command not implement")
+        return msg

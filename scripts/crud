@@ -81,6 +81,12 @@ def keys_handler(args):
 def size_handler(args):
     return create_connection(args.host, args.port, args.uuid).size()
 
+def subscribe_handler(args):
+    global transaction_id
+    transaction_id = random.randint(1,sys.maxint)
+    # return send_request(args.node, args.uuid, unsubscribe_request(args.key),
+    #                     ws=send_request(args.node, args.uuid, subscribe_request(args.key), True))
+
 
 if __name__ == "__main__":
 
@@ -150,6 +156,12 @@ if __name__ == "__main__":
     size_parser = subparsers.add_parser('size', help="Determine the size of the DB by UUID")
     size_parser.add_argument("-u", "--uuid",  type=str, default=None, help="uuid", required=True)
     size_parser.set_defaults(func=size_handler)
+
+    # subscribe
+    subscribe_parser = subparsers.add_parser('subscribe', help="Subscribe and monitor changes for a key")
+    subscribe_parser.add_argument("-u", "--uuid", type=str, default=None, help="uuid", required=True)
+    subscribe_parser.add_argument("-k", "--key", type=str, default=None, help="key", required=True)
+    subscribe_parser.set_defaults(func=subscribe_handler)
 
     args = parser.parse_args()
     if args.debug:
