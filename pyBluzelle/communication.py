@@ -79,7 +79,7 @@ class Connection(object):
             port = resp.redirect.leader_port
             self._connect(host, port)
             logger.debug("redirecting to leader at {}:{}.\n".format(host, port))
-            self._send_request_sync(msg)
+            resp = self._send_request_sync(msg)
         else:
             logger.debug("Response: \n{}".format(resp))
         return resp
