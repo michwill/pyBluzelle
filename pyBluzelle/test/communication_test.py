@@ -46,10 +46,10 @@ class TestConnection(unittest.TestCase):
     test_key_other = "test_other"
     test_value = "value"
 
-    def setUp(self):
-        self.connection = Connection(TestConnection.test_host,
-                                     TestConnection.test_port,
-                                     TestConnection.test_uuid)
+    def createTestConnection(self):
+        return Connection(TestConnection.test_host,
+                          TestConnection.test_port,
+                          TestConnection.test_uuid)
 
     def tearDown(self):
         pass
@@ -65,7 +65,9 @@ class TestConnection(unittest.TestCase):
         msg = database_pb2.database_response()
         when(mocket).recv().thenReturn(msg.SerializeToString())
 
-        self.assertIsNone(self.connection.create(TestConnection.test_key, TestConnection.test_value))
+        test_connection = self.createTestConnection()
+
+        self.assertIsNone(test_connection.create(TestConnection.test_key, TestConnection.test_value))
 
         self.assertIsNotNone(proto_captor.value)
         send_json = json.loads(proto_captor.value)
@@ -88,10 +90,12 @@ class TestConnection(unittest.TestCase):
         when(mocket).send(proto_captor)
 
         msg = database_pb2.database_response()
-        msg.resp.value = TestConnection.test_value
+        msg.read.value = TestConnection.test_value
         when(mocket).recv().thenReturn(msg.SerializeToString())
 
-        self.assertEquals(self.connection.read(TestConnection.test_key), TestConnection.test_value)
+        test_connection = self.createTestConnection()
+
+        self.assertEquals(test_connection.read(TestConnection.test_key), TestConnection.test_value)
 
         self.assertIsNotNone(proto_captor.value)
         send_json = json.loads(proto_captor.value)
@@ -113,7 +117,9 @@ class TestConnection(unittest.TestCase):
         msg = database_pb2.database_response()
         when(mocket).recv().thenReturn(msg.SerializeToString())
 
-        self.assertIsNone(self.connection.update(TestConnection.test_key, TestConnection.test_value))
+        test_connection = self.createTestConnection()
+
+        self.assertIsNone(test_connection.update(TestConnection.test_key, TestConnection.test_value))
 
         self.assertIsNotNone(proto_captor.value)
         send_json = json.loads(proto_captor.value)
@@ -134,10 +140,11 @@ class TestConnection(unittest.TestCase):
         when(mocket).send(proto_captor)
 
         msg = database_pb2.database_response()
-        msg.resp.value = TestConnection.test_value
         when(mocket).recv().thenReturn(msg.SerializeToString())
 
-        self.assertIsNone(self.connection.delete(TestConnection.test_key))
+        test_connection = self.createTestConnection()
+
+        self.assertIsNone(test_connection.delete(TestConnection.test_key))
 
         self.assertIsNotNone(proto_captor.value)
         send_json = json.loads(proto_captor.value)
@@ -157,10 +164,12 @@ class TestConnection(unittest.TestCase):
         when(mocket).send(proto_captor)
 
         msg = database_pb2.database_response()
-        msg.resp.has = True
+        msg.has.has = True
         when(mocket).recv().thenReturn(msg.SerializeToString())
 
-        self.assertTrue(self.connection.has(TestConnection.test_key))
+        test_connection = self.createTestConnection()
+
+        self.assertTrue(test_connection.has(TestConnection.test_key))
 
         self.assertIsNotNone(proto_captor.value)
         send_json = json.loads(proto_captor.value)
@@ -180,10 +189,13 @@ class TestConnection(unittest.TestCase):
         keys = [TestConnection.test_key, TestConnection.test_key_other]
 
         msg = database_pb2.database_response()
-        msg.resp.keys.extend(keys)
+        msg.keys.keys.extend(keys)
 
         when(mocket).recv().thenReturn(msg.SerializeToString())
-        self.assertListEqual(list(self.connection.keys()), keys)
+
+        test_connection = self.createTestConnection()
+
+        self.assertListEqual(list(test_connection.keys()), keys)
 
         self.assertIsNotNone(proto_captor.value)
         send_json = json.loads(proto_captor.value)
@@ -202,10 +214,13 @@ class TestConnection(unittest.TestCase):
         when(mocket).send(proto_captor)
 
         msg = database_pb2.database_response()
-        msg.resp.size = 42
+        msg.size.bytes = 42
+        msg.size.keys = 100
         when(mocket).recv().thenReturn(msg.SerializeToString())
 
-        self.assertEqual(self.connection.size(), 42)
+        test_connection = self.createTestConnection()
+
+        self.assertEqual(test_connection.size(), {"bytes": 42, "keys": 100})
 
         self.assertIsNotNone(proto_captor.value)
         send_json = json.loads(proto_captor.value)
@@ -229,15 +244,17 @@ class TestConnection(unittest.TestCase):
 
         when(mocket).recv().thenReturn(msg.SerializeToString())
 
+        test_connection = self.createTestConnection()
+
         redirect_mocket = mock(websocket.WebSocket, strict=False)
         when(websocket).create_connection("ws://{}:{}".format(TestConnection.test_redirect_host,
                                                               TestConnection.test_redirect_port)).thenReturn(redirect_mocket)
 
         msg = database_pb2.database_response()
-        msg.resp.value = TestConnection.test_value
+        msg.read.value = TestConnection.test_value
         when(redirect_mocket).recv().thenReturn(msg.SerializeToString())
 
-        self.assertEquals(self.connection.read(TestConnection.test_key), TestConnection.test_value)
+        self.assertEquals(test_connection.read(TestConnection.test_key), TestConnection.test_value)
 
         self.assertIsNotNone(proto_captor.value)
         send_json = json.loads(proto_captor.value)

@@ -26,7 +26,7 @@ OSX
 
 `brew install protobuf`
 
-5. Run  protoc --python_out=./pyBluzelle/proto --proto_path=proto/proto bluzelle.proto database.proto audit.proto in the `pyBluzelle` directory
+5. Run  protoc --python_out=./pyBluzelle/proto --proto_path=proto/proto pbft.proto bluzelle.proto database.proto audit.proto in the `pyBluzelle` directory
 
 6. Run `pip install .` under the `pyBluzelle` directory
 

@@ -9,7 +9,7 @@ addons:
       - protobuf-compiler
 
 before_install:
-  - protoc --python_out=pyBluzelle/proto --proto_path=proto/proto bluzelle.proto database.proto audit.proto
+  - protoc --python_out=pyBluzelle/proto --proto_path=proto/proto pbft.proto bluzelle.proto database.proto audit.proto
 
 python:
   - "2.7"
