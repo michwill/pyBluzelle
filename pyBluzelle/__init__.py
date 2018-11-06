@@ -14,7 +14,7 @@
 
 from pyBluzelle.communication import Connection
 import logging
-from version import get_version
+from .version import get_version
 
 __version__ = get_version()
 
