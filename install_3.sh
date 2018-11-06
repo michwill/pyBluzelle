@@ -21,4 +21,5 @@ sed -i 's/import pbft_pb2/import pyBluzelle.proto.pbft_pb2/g' pyBluzelle/proto/b
 mkdir .venv
 virtualenv .venv -p python3
 source .venv/bin/activate
+pip3 install -r requirements.txt
 pip3 install -e .  # Editable installation for development only
