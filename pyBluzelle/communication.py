@@ -59,11 +59,11 @@ class Connection(object):
 
     def _send_request_sync(self, msg):
         msg.db.header.db_uuid = self._uuid
-        msg.db.header.transaction_id = random.randint(1, sys.maxint)
+        msg.db.header.transaction_id = random.randint(1, sys.maxsize)
 
         req = {}
         req["bzn-api"] = "database"
-        req["msg"] = base64.b64encode(msg.SerializeToString())
+        req["msg"] = base64.b64encode(msg.SerializeToString()).decode()
 
         logger.debug("Sending: {}".format(msg))
         self._ws.send(json.dumps(req))
@@ -147,7 +147,7 @@ class Connection(object):
         """
         msg = bluzelle_pb2.bzn_msg()
         msg.db.keys.SetInParent()
-        resp = self._send_request_sync( msg)
+        resp = self._send_request_sync(msg)
         return resp.keys.keys
 
     def size(self):
@@ -167,4 +167,4 @@ class Connection(object):
 
     def unsubscribe(self):
         logger.info("Command not implement")
-        return msg
+        return
